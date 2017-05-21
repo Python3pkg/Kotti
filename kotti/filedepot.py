@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import logging
 import mimetypes
@@ -82,7 +82,7 @@ class DBStoredFile(Base):
         self.last_modified = last_modified or datetime.now()
         self.content_length = content_length
 
-        for k, v in kwds.items():
+        for k, v in list(kwds.items()):
             setattr(self, k, v)
 
     def read(self, n=-1):
@@ -329,7 +329,7 @@ def migrate_storage(from_storage, to_storage):
     old_default = DepotManager._default_depot
     DepotManager._default_depot = to_storage
 
-    for klass, props in _SQLAMutationTracker.mapped_entities.items():
+    for klass, props in list(_SQLAMutationTracker.mapped_entities.items()):
         log.info("Migrating %r", klass)
 
         mapper = klass._sa_class_manager.mapper
@@ -503,7 +503,7 @@ class TweenFactory(object):
         DepotManager.set_middleware(self)
 
     def url_for(self, path):
-        return u'/'.join((self.mountpoint, path))
+        return '/'.join((self.mountpoint, path))
 
     def __call__(self, request):
         """
@@ -573,7 +573,7 @@ def adjust_for_engine(conn, branch):
     def patched_processed_result_value(self, value, dialect):
         if not value:
             return None
-        return self._upload_type.decode(unicode(value))
+        return self._upload_type.decode(str(value))
 
     if conn.engine.dialect.name == 'sqlite':  # pragma: no cover
         from depot.fields.sqlalchemy import UploadedFileField
@@ -607,7 +607,7 @@ def extract_depot_settings(prefix="kotti.depot.", settings=None):
     """
 
     extracted = {}
-    for k, v in extract_from_settings(prefix, settings).items():
+    for k, v in list(extract_from_settings(prefix, settings).items()):
         index, conf = k.split('.', 1)
         index = int(index)
         extracted.setdefault(index, {})

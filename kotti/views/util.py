@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import hashlib
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from collections import defaultdict
 from datetime import datetime
 
@@ -47,7 +47,7 @@ class SettingHasValuePredicate(object):
             raise ValueError("Only boolean values supported")
 
     def text(self):
-        return u'if_setting_has_value = {0} == {1}'.format(
+        return 'if_setting_has_value = {0} == {1}'.format(
             self.name, self.value)
 
     phash = text
@@ -61,7 +61,7 @@ class RootOnlyPredicate(object):
         self.val = val
 
     def text(self):
-        return u'root_only = {0}'.format(self.val)
+        return 'root_only = {0}'.format(self.val)
 
     phash = text
 
@@ -195,9 +195,9 @@ class TemplateAPI(object):
 
         view_title = self.request.view_name.replace('_', ' ').title()
         if view_title:
-            view_title += u' '
+            view_title += ' '
         view_title += self.context.title
-        return u'{0} - {1}'.format(view_title, self.site_title)
+        return '{0} - {1}'.format(view_title, self.site_title)
 
     def url(self, context=None, *elements, **kwargs):
         """
@@ -297,7 +297,7 @@ class TemplateAPI(object):
             context = self.context
         children = []
         if hasattr(context, 'values'):
-            for child in context.values():
+            for child in list(context.values()):
                 if (not permission or
                         self.request.has_permission(permission, child)):
                     children.append(child)
@@ -313,8 +313,8 @@ class TemplateAPI(object):
             email = user.name
         h = hashlib.md5(email).hexdigest()
         query = {'default': default_image, 'size': str(size)}
-        url = u'https://secure.gravatar.com/avatar/{0}?{1}'.format(
-            h, urllib.urlencode(query))
+        url = 'https://secure.gravatar.com/avatar/{0}?{1}'.format(
+            h, urllib.parse.urlencode(query))
         return url
 
     @reify
@@ -351,9 +351,9 @@ class TemplateAPI(object):
     def find_edit_view(self, item):
         view_name = self.request.view_name
         if not view_permitted(item, self.request, view_name):
-            view_name = u'edit'
+            view_name = 'edit'
         if not view_permitted(item, self.request, view_name):
-            view_name = u''
+            view_name = ''
         return view_name
 
     @reify
@@ -435,7 +435,7 @@ def nodes_tree(request, context=None, permission='view'):
         if request.has_permission(permission, node):
             item_to_children[node.parent_id].append(node)
 
-    for children in item_to_children.values():
+    for children in list(item_to_children.values()):
         children.sort(key=lambda ch: ch.position)
 
     if context is None:
@@ -459,7 +459,7 @@ def search_content(search_term, request=None):
 def default_search_content(search_term, request=None):
 
     # noinspection PyUnresolvedReferences
-    searchstring = u'%{0}%'.format(search_term)
+    searchstring = '%{0}%'.format(search_term)
 
     # generic_filter can be applied to all Node (and subclassed) objects
     generic_filter = or_(Content.name.like(searchstring),

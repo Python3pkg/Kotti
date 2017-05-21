@@ -44,7 +44,7 @@ Fixture dependencies
 
 """
 
-from __future__ import absolute_import, division, print_function
+
 
 import warnings
 from datetime import datetime
@@ -180,7 +180,7 @@ def content(connection, settings):
     # tests, and because the 'content' fixture does not depend on
     # 'event' and therefore the event handlers aren't fired for root
     # otherwise:
-    get_root().path = u'/'
+    get_root().path = '/'
     commit()
 
 
@@ -312,7 +312,7 @@ class TestStorage:
     def get(self, id):
         info = self._storage[int(id)]
 
-        from StringIO import StringIO
+        from io import StringIO
 
         f = MagicMock(wraps=StringIO(info['content']))
         f.seek(0)

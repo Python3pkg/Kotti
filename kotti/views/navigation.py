@@ -2,7 +2,7 @@
 """
 This module contains navigation related views.
 """
-from __future__ import absolute_import, division, print_function
+
 
 from pyramid.view import view_config
 
@@ -36,7 +36,7 @@ def render_tree_navigation(context, request):
 def local_navigation(context, request):
 
     def ch(node):
-        return [child for child in node.values()
+        return [child for child in list(node.values())
                 if child.in_navigation and
                 request.has_permission('view', child)]
 

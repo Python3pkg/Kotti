@@ -11,7 +11,7 @@ because they are not directly touched during testsuite runs, but only within
 subprocesses which seems to be not recorded by coverage.
 """
 
-from __future__ import absolute_import, division, print_function
+
 
 import datetime
 import os
@@ -28,7 +28,7 @@ class KottiTemplate(PyramidTemplate):
     @reify
     def _settings(self):  # pragma: no cover
         s = Settings('org.pylonsproject.kotti.ScaffoldDefaults')
-        s.add_setting("author", unicode, default='')
+        s.add_setting("author", str, default='')
         s.add_setting("email", str, default='')
         s.add_setting("gh_user", str, '')
         s.load_settings()  # loads anything that might be saved
@@ -42,7 +42,7 @@ class KottiTemplate(PyramidTemplate):
             return env
 
         s = self._settings
-        s[key] = raw_input(u'{0} [{1}]: '.format(caption, s[key])) or s[key]
+        s[key] = input('{0} [{1}]: '.format(caption, s[key])) or s[key]
 
         try:
             s.save_settings()
@@ -81,7 +81,7 @@ class KottiTemplate(PyramidTemplate):
 
         separator = "=" * 79
         msg = dedent(
-            u"""
+            """
             {0}
             Welcome to Kotti!
 

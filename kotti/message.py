@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import hashlib
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from html2text import HTML2Text
 from pyramid.renderers import render
@@ -107,16 +107,16 @@ def email_set_password(user, request,
                        add_query=None):
     site_title = get_settings()['kotti.site_title']
     token = make_token(user)
-    user.confirm_token = unicode(token)
+    user.confirm_token = str(token)
     set_password_query = {'token': token, 'email': user.email}
     if add_query:
         set_password_query.update(add_query)
     url = '{0}/@@set-password?{1}'.format(
         request.application_url,
-        urllib.urlencode(set_password_query))
+        urllib.parse.urlencode(set_password_query))
     variables = dict(
         user_title=user.title,
         site_title=site_title,
         url=url)
-    recipients = [u'"{0}" <{1}>'.format(user.title, user.email)]  # XXX naive?
+    recipients = ['"{0}" <{1}>'.format(user.title, user.email)]  # XXX naive?
     send_email(request, recipients, template_name, variables)

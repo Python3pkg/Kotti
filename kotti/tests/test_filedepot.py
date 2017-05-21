@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import datetime
 
@@ -14,7 +14,7 @@ from kotti.resources import Image
 class TestDBStoredFile:
 
     def test_storedfile_interface(self, db_session, events, setup_app):
-        f = DBStoredFile('fileid', filename=u'f.jpg', content_type='image/jpeg',
+        f = DBStoredFile('fileid', filename='f.jpg', content_type='image/jpeg',
                          content_length=1000, data='content')
 
         assert f.close() is None
@@ -40,8 +40,8 @@ class TestDBStoredFile:
         assert f.content_length == 1000
         assert f.content_type == 'image/jpeg'
         assert f.file_id == 'fileid'
-        assert f.filename == u'f.jpg'
-        assert f.name == u"f.jpg"
+        assert f.filename == 'f.jpg'
+        assert f.name == "f.jpg"
         assert f.public_url is None
 
         f.data = None
@@ -90,7 +90,7 @@ class TestDBFileStorage:
 
     def make_one(self,
                  content='content here',
-                 filename=u'f.jpg',
+                 filename='f.jpg',
                  content_type='image/jpg'):
 
         file_id = DBFileStorage().create(
@@ -121,7 +121,7 @@ class TestDBFileStorage:
         assert DBFileStorage().get(file_id).data == "content here"
 
     def test_delete(self, db_session):
-        file_id = DBFileStorage().create('content here', u'f.jpg', 'image/jpg')
+        file_id = DBFileStorage().create('content here', 'f.jpg', 'image/jpg')
         fs = DBFileStorage().get(file_id)
 
         db_session.add(fs)
@@ -135,14 +135,14 @@ class TestDBFileStorage:
     def test_replace(self, db_session):
         file_id = self.make_one()
 
-        DBFileStorage().replace(file_id, 'second content', u'f2.jpg', 'doc')
+        DBFileStorage().replace(file_id, 'second content', 'f2.jpg', 'doc')
         fs = DBFileStorage().get(file_id)
-        assert fs.filename == u'f2.jpg'
+        assert fs.filename == 'f2.jpg'
         assert fs.content_type == 'doc'
         assert fs.read() == 'second content'
 
-        DBFileStorage().replace(fs, 'third content', u'f3.jpg', 'xls')
-        assert fs.filename == u'f3.jpg'
+        DBFileStorage().replace(fs, 'third content', 'f3.jpg', 'xls')
+        assert fs.filename == 'f3.jpg'
         assert fs.content_type == 'xls'
         assert fs.read() == 'third content'
 
@@ -153,7 +153,7 @@ class TestDBFileStorage:
         DepotManager._depots = {'default': DBFileStorage()}
 
         file_id = DepotManager.get().create(
-            'content here', u'f.jpg', 'image/jpg')
+            'content here', 'f.jpg', 'image/jpg')
         fs = DepotManager.get().get(file_id)
 
         db_session.add(fs)
@@ -172,16 +172,16 @@ class TestMigrateBetweenStorage:
 
     def _create_content(self, db_session, root, image1, image2):
         data = [
-            ('f1...', u'file1.jpg', 'image/jpeg'),
-            ('f2...', u'file2.png', 'image/png'),
+            ('f1...', 'file1.jpg', 'image/jpeg'),
+            ('f2...', 'file2.png', 'image/png'),
         ]
         for row in data:
             f = File(data=row[0], filename=row[1], mimetype=row[2])
             root[row[1]] = f
 
         data = [
-            (image2, u'image1.jpg', 'image/jpeg'),
-            (image1, u'image2.png', 'image/png'),
+            (image2, 'image1.jpg', 'image/jpeg'),
+            (image1, 'image2.png', 'image/png'),
         ]
         for row in data:
             f = Image(data=row[0], filename=row[1], mimetype=row[2])

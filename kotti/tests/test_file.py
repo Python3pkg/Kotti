@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
 
-from StringIO import StringIO
+
+from io import StringIO
 
 import pytest
 from colander import null
@@ -20,7 +20,7 @@ from kotti.views.file import inline_view
 class TestFileViews:
     def _create_file(self, config):
         from kotti.resources import File
-        self.file = File(asset('logo.png').read(), u"myfüle.png", u"image/png")
+        self.file = File(asset('logo.png').read(), "myfüle.png", "image/png")
 
     def _test_common_headers(self, headers):
         for name in ('Content-Disposition', 'Content-Length', 'Content-Type'):
@@ -58,41 +58,41 @@ class TestFileEditForm:
     def test_edit_with_file(self, db_session, filedepot):
         view = self.make_one()
         view.edit(
-            title=u'A title', description=u'A description',
-            tags=[u"A tag"],
+            title='A title', description='A description',
+            tags=["A tag"],
             file=dict(
                 fp=StringIO('filecontents'),
-                filename=u'myfile.png',
-                mimetype=u'image/png',
+                filename='myfile.png',
+                mimetype='image/png',
                 size=10,
                 uid="randomabc",
                 ),
             )
-        assert view.context.title == u'A title'
-        assert view.context.description == u'A description'
+        assert view.context.title == 'A title'
+        assert view.context.description == 'A description'
         assert view.context.data.file.read() == 'filecontents'
-        assert view.context.filename == u'myfile.png'
-        assert view.context.mimetype == u'image/png'
+        assert view.context.filename == 'myfile.png'
+        assert view.context.mimetype == 'image/png'
         assert view.context.size == len('filecontents')
-        assert view.context.tags == [u"A tag"]
+        assert view.context.tags == ["A tag"]
 
     def test_edit_without_file(self, filedepot):
         view = self.make_one()
         view.context.data = 'filecontents'
-        view.context.filename = u'myfile.png'
-        view.context.mimetype = u'image/png'
+        view.context.filename = 'myfile.png'
+        view.context.mimetype = 'image/png'
         view.context.size = 777
         with patch("kotti.views.edit.content._to_fieldstorage") as tfs:
-            view.edit(title=u'A title',
-                      description=u'A description',
+            view.edit(title='A title',
+                      description='A description',
                       tags=[],
                       file=null)
             assert tfs.call_count == 0
-            assert view.context.title == u'A title'
-            assert view.context.description == u'A description'
+            assert view.context.title == 'A title'
+            assert view.context.description == 'A description'
             assert view.context.data.file.read() == 'filecontents'
-            assert view.context.filename == u'myfile.png'
-            assert view.context.mimetype == u'image/png'
+            assert view.context.filename == 'myfile.png'
+            assert view.context.mimetype == 'image/png'
             assert view.context.size == 777
 
 
@@ -104,24 +104,24 @@ class TestFileAddForm:
     def test_add(self, config, filedepot):
         view = self.make_one()
         file = view.add(
-            title=u'A title',
-            description=u'A description',
+            title='A title',
+            description='A description',
             tags=[],
             file=dict(
                 fp=StringIO('filecontents'),
-                filename=u'myfile.png',
-                mimetype=u'image/png',
+                filename='myfile.png',
+                mimetype='image/png',
                 size=None,
                 uid="randomabc",
                 ),
             )
 
-        assert file.title == u'A title'
-        assert file.description == u'A description'
+        assert file.title == 'A title'
+        assert file.description == 'A description'
         assert file.tags == []
         assert file.data.file.read() == 'filecontents'
-        assert file.filename == u'myfile.png'
-        assert file.mimetype == u'image/png'
+        assert file.filename == 'myfile.png'
+        assert file.mimetype == 'image/png'
         assert file.size == len('filecontents')
 
 
@@ -134,7 +134,7 @@ class TestFileUploadTempStore:
         tmpstore = self.make_one()
         tmpstore.session['important'] = 3
         tmpstore.session['_secret'] = 4
-        assert tmpstore.keys() == ['important']
+        assert list(tmpstore.keys()) == ['important']
 
     def test_delitem(self):
         tmpstore = self.make_one()
@@ -147,7 +147,7 @@ class TestFileUploadTempStore:
         ts['a'] = {'fp': StringIO('test'), 'marker': 'yes'}
         assert ts.session['a'] == {'file_contents': 'test', 'marker': 'yes'}
         v = ts['a']
-        assert 'fp' in v.keys()
+        assert 'fp' in list(v.keys())
         assert v['marker'] == 'yes'
         assert v['fp'].read() == 'test'
 
@@ -190,15 +190,15 @@ class TestDepotStore:
                               app):
         from depot.manager import DepotManager
 
-        f = factory(data=image_asset.read(), name=u'content', title=u'content')
+        f = factory(data=image_asset.read(), name='content', title='content')
         id = f.data['file_id']
 
         db_session.add(f)
         db_session.flush()
-        assert id in DepotManager.get()._storage.keys()
+        assert id in list(DepotManager.get()._storage.keys())
 
         db_session.rollback()
-        assert id not in DepotManager.get()._storage.keys()
+        assert id not in list(DepotManager.get()._storage.keys())
         assert DepotManager.get().delete.called
 
     @pytest.mark.parametrize("factory", [File, Image])
@@ -206,26 +206,26 @@ class TestDepotStore:
                     app):
         from depot.manager import DepotManager
 
-        f = factory(data=image_asset, name=u'content', title=u'content')
+        f = factory(data=image_asset, name='content', title='content')
         id = f.data['file_id']
         root[str(id)] = f
         db_session.flush()
 
-        assert id in DepotManager.get()._storage.keys()
+        assert id in list(DepotManager.get()._storage.keys())
 
         del root[str(id)]
         import transaction
         transaction.commit()
 
         assert DepotManager.get().delete.called
-        assert id not in DepotManager.get()._storage.keys()
+        assert id not in list(DepotManager.get()._storage.keys())
 
 
 class TestUploadedFileResponse:
     def _create_file(self,
                      data="file contents",
-                     filename=u"myfüle.png",
-                     mimetype=u"image/png"):
+                     filename="myfüle.png",
+                     mimetype="image/png"):
         from kotti.resources import File
         return File(data, filename, mimetype)
 
@@ -244,12 +244,12 @@ class TestUploadedFileResponse:
         assert ''.join(resp.app_iter) == data
 
     def test_unknown_filename(self, filedepot, image_asset2):
-        f = self._create_file(b'foo', u"file.bar", None)
+        f = self._create_file(b'foo', "file.bar", None)
         resp = UploadedFileResponse(f.data, DummyRequest())
         assert resp.headers['Content-Type'] == 'application/octet-stream'
 
     def test_guess_content_type(self, filedepot, image_asset):
-        f = self._create_file(image_asset.read(), u"file.png", None)
+        f = self._create_file(image_asset.read(), "file.png", None)
         resp = UploadedFileResponse(f.data, DummyRequest())
         assert resp.headers['Content-Type'] == 'image/png'
 
@@ -291,8 +291,8 @@ class TestUploadedFileResponse:
 class TestStoredFileResponse:
     def _create_file(self,
                      data="file contents",
-                     filename=u"myfüle.png",
-                     mimetype=u"image/png"):
+                     filename="myfüle.png",
+                     mimetype="image/png"):
         from kotti.resources import File
         return File(data, filename, mimetype)
 
@@ -311,12 +311,12 @@ class TestStoredFileResponse:
         assert ''.join(resp.app_iter) == data
 
     def test_unknown_filename(self, filedepot, image_asset2):
-        f = self._create_file(b'foo', u"file.bar", None)
+        f = self._create_file(b'foo', "file.bar", None)
         resp = StoredFileResponse(f.data.file, DummyRequest())
         assert resp.headers['Content-Type'] == 'application/octet-stream'
 
     def test_guess_content_type(self, filedepot, image_asset):
-        f = self._create_file(image_asset.read(), u"file.png", None)
+        f = self._create_file(image_asset.read(), "file.png", None)
         resp = StoredFileResponse(f.data.file, DummyRequest())
         assert resp.headers['Content-Type'] == 'image/png'
 

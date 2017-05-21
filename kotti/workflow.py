@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import transaction
 from pyramid.security import DENY_ALL
@@ -56,7 +56,7 @@ def workflow_callback(context, info):
 
     # This could definitely be cached...
     special_roles = ('system.Everyone', 'system.Authenticated')
-    for key, value in state_data.items():
+    for key, value in list(state_data.items()):
         if key.startswith('role:') or key in special_roles:
             for perm in value.split():
                 acl.append(("Allow", key, perm))

@@ -7,9 +7,9 @@ Inheritance Diagram
 
 .. inheritance-diagram:: kotti.views.form
 """
-from __future__ import absolute_import, division, print_function
 
-from StringIO import StringIO
+
+from io import StringIO
 from UserDict import DictMixin
 
 import colander
@@ -79,9 +79,9 @@ class BaseFormView(FormView):
 
     form_class = Form
     buttons = (
-        deform.Button('save', _(u'Save')),
-        deform.Button('cancel', _(u'Cancel')))
-    success_message = _(u"Your changes have been saved.")
+        deform.Button('save', _('Save')),
+        deform.Button('cancel', _('Cancel')))
+    success_message = _("Your changes have been saved.")
     success_url = None
     schema_factory = None
     use_csrf_token = True
@@ -153,12 +153,12 @@ class EditFormView(BaseFormView):
         return HTTPFound(location=location)
 
     def edit(self, **appstruct):
-        for key, value in appstruct.items():
+        for key, value in list(appstruct.items()):
             setattr(self.context, key, value)
 
     @reify
     def first_heading(self):
-        return _(u'Edit ${title}',
+        return _('Edit ${title}',
                  mapping=dict(title=self.context.title)
                  )
 
@@ -176,7 +176,7 @@ class AddFormView(BaseFormView):
             item_type = u'Document'
     """
 
-    success_message = _(u"Item was added.")
+    success_message = _("Item was added.")
     item_type = None
     add_template_vars = ('first_heading',)
 
@@ -192,7 +192,7 @@ class AddFormView(BaseFormView):
         name = appstruct.get('name')
         if name is None:
             name = title_to_name(
-                appstruct['title'], blacklist=self.context.keys())
+                appstruct['title'], blacklist=list(self.context.keys()))
         return name
 
     @reify
@@ -200,11 +200,11 @@ class AddFormView(BaseFormView):
         context_title = getattr(self.request.context, 'title', None)
         type_title = self.item_type or self.add.type_info.title
         if context_title:
-            return _(u'Add ${type} to ${title}.',
+            return _('Add ${type} to ${title}.',
                      mapping=dict(type=translate(type_title),
                                   title=context_title))
         else:
-            return _(u'Add ${type}.', mapping=dict(type=translate(type_title)))
+            return _('Add ${type}.', mapping=dict(type=translate(type_title)))
 
 
 class CommaSeparatedListWidget(deform.widget.Widget):
@@ -239,7 +239,7 @@ class FileUploadTempStore(DictMixin):
         self.session = request.session
 
     def keys(self):
-        return [k for k in self.session.keys() if not k.startswith('_')]
+        return [k for k in list(self.session.keys()) if not k.startswith('_')]
 
     def __setitem__(self, name, value):
         value = value.copy()

@@ -5,7 +5,7 @@ Inheritance Diagram
 
 .. inheritance-diagram:: kotti.testing
 """
-from __future__ import absolute_import, division, print_function
+
 
 import os
 from os.path import join, dirname
@@ -60,15 +60,15 @@ class DummyRequest(testing.DummyRequest):
         ``request.blank`` is used in Kotti only when assigning slots, where
         the POST parameters are faked as a querystring.
         """
-        import urlparse
+        import urllib.parse
 
         def _decode(body):
             if not body:
                 return {}
             return dict([(x, y.decode('utf-8'))
-                         for x, y in urlparse.parse_qsl(body)])
+                         for x, y in urllib.parse.parse_qsl(body)])
 
-        if POST and isinstance(POST, basestring):
+        if POST and isinstance(POST, str):
             POST = _decode(POST)
         req = testing.DummyRequest(path=path, environ=environ, headers=headers,
                                    cookies=None, post=POST, **kw)
@@ -112,7 +112,7 @@ def login_view(request):
 
 
 def dummy_search(search_term, request):
-    return u"Not found. Sorry!"
+    return "Not found. Sorry!"
 
 
 def testing_db_url():
@@ -264,7 +264,7 @@ class FunctionalTestBase(TestCase):
     def tearDown(self):
         tearDown()
 
-    def login(self, login=u'admin', password=u'secret'):
+    def login(self, login='admin', password='secret'):
         return self.test_app.post(
             '/@@login',
             {'login': login, 'password': password, 'submit': 'submit'},

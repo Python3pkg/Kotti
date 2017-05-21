@@ -2,10 +2,10 @@
 """
 Content edit views
 """
-from __future__ import absolute_import, division, print_function
+
 
 import random
-from StringIO import StringIO
+from io import StringIO
 
 import colander
 from colander import SchemaNode
@@ -32,7 +32,7 @@ from kotti.views.form import validate_file_size_limit
 class ContentSchema(colander.MappingSchema):
     title = colander.SchemaNode(
         colander.String(),
-        title=_(u'Title'),
+        title=_('Title'),
         validator=colander.Length(
             max=Node.title.property.columns[0].type.length),
         )
@@ -40,7 +40,7 @@ class ContentSchema(colander.MappingSchema):
         colander.String(),
         title=_('Description'),
         widget=TextAreaWidget(cols=40, rows=5),
-        missing=u"",
+        missing="",
         )
     tags = colander.SchemaNode(
         ObjectType(),
@@ -53,12 +53,12 @@ class ContentSchema(colander.MappingSchema):
 class DocumentSchema(ContentSchema):
     body = colander.SchemaNode(
         colander.String(),
-        title=_(u'Body'),
+        title=_('Body'),
         widget=RichTextWidget(
             # theme='advanced', width=790, height=500
             height=500,
         ),
-        missing=u"",
+        missing="",
         )
 
 
@@ -67,7 +67,7 @@ def FileSchema(tmpstore, title_missing=None):
     class FileSchema(ContentSchema):
         file = SchemaNode(
             FileData(),
-            title=_(u'File'),
+            title=_('File'),
             widget=FileUploadWidget(tmpstore),
             validator=validate_file_size_limit,
             )
@@ -87,7 +87,7 @@ class DocumentEditForm(EditFormView):
 class DocumentAddForm(AddFormView):
     schema_factory = DocumentSchema
     add = Document
-    item_type = _(u"Document")
+    item_type = _("Document")
 
 
 class FileEditForm(EditFormView):
@@ -118,7 +118,7 @@ class FileEditForm(EditFormView):
 
 
 class FileAddForm(AddFormView):
-    item_type = _(u"File")
+    item_type = _("File")
     item_class = File  # specific to this class
 
     def schema_factory(self):

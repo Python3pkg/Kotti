@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 from alembic.migration import MigrationContext
 from mock import patch
@@ -38,7 +38,7 @@ class TestPackageEnvironment:
         from kotti.migrate import DEFAULT_LOCATION
 
         with patch('kotti.migrate.get_settings',
-                   return_value={'sqlalchemy.url': u'database_url'}):
+                   return_value={'sqlalchemy.url': 'database_url'}):
             return PackageEnvironment(DEFAULT_LOCATION)
 
     def test_pkg_name(self, db_session, events):

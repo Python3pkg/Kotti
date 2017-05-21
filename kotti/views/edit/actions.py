@@ -2,7 +2,7 @@
 """
 Action views
 """
-from __future__ import absolute_import, division, print_function
+
 
 from pyramid.exceptions import Forbidden
 from pyramid.httpexceptions import HTTPFound
@@ -104,7 +104,7 @@ class NodeActions(object):
         self.request.session['kotti.paste'] = (ids, 'copy')
         for id in ids:
             item = DBSession.query(Node).get(id)
-            self.flash(_(u'${title} was copied.',
+            self.flash(_('${title} was copied.',
                          mapping=dict(title=item.title)), 'success')
         if not self.request.is_xhr:
             return self.back()
@@ -122,7 +122,7 @@ class NodeActions(object):
         self.request.session['kotti.paste'] = (ids, 'cut')
         for id in ids:
             item = DBSession.query(Node).get(id)
-            self.flash(_(u'${title} was cut.', mapping=dict(title=item.title)),
+            self.flash(_('${title} was cut.', mapping=dict(title=item.title)),
                        'success')
         if not self.request.is_xhr:
             return self.back()
@@ -145,7 +145,7 @@ class NodeActions(object):
                         raise Forbidden()
                     item.__parent__.children.remove(item)
                     item.name = title_to_name(item.name,
-                                              blacklist=self.context.keys())
+                                              blacklist=list(self.context.keys()))
                     self.context[item.name] = item
                     if count is len(ids) - 1:
                         del self.request.session['kotti.paste']
@@ -154,13 +154,13 @@ class NodeActions(object):
                     name = copy.name
                     if not name:  # for root
                         name = copy.title
-                    name = title_to_name(name, blacklist=self.context.keys())
+                    name = title_to_name(name, blacklist=list(self.context.keys()))
                     copy.name = name
                     self.context[name] = copy
-                self.flash(_(u'${title} was pasted.',
+                self.flash(_('${title} was pasted.',
                              mapping=dict(title=item.title)), 'success')
             else:
-                self.flash(_(u'Could not paste node. It no longer exists.'),
+                self.flash(_('Could not paste node. It no longer exists.'),
                            'error')
         DBSession.flush()
         if not self.request.is_xhr:
@@ -182,7 +182,7 @@ class NodeActions(object):
             index = self.context.children.index(child)
             self.context.children.pop(index)
             self.context.children.insert(index + move, child)
-            self.flash(_(u'${title} was moved.',
+            self.flash(_('${title} was moved.',
                          mapping=dict(title=child.title)), 'success')
         if not self.request.is_xhr:
             return self.back()
@@ -224,10 +224,10 @@ class NodeActions(object):
                 child.in_navigation = show
                 mapping = dict(title=child.title)
                 if show:
-                    mg = _(u'${title} is now visible in the navigation.',
+                    mg = _('${title} is now visible in the navigation.',
                            mapping=mapping)
                 else:
-                    mg = _(u'${title} is no longer visible in the navigation.',
+                    mg = _('${title} is no longer visible in the navigation.',
                            mapping=mapping)
                 self.flash(mg, 'success')
         if not self.request.is_xhr:
@@ -269,16 +269,16 @@ class NodeActions(object):
         :rtype: pyramid.httpexceptions.HTTPFound or dict
         """
 
-        action = self.request.POST.get(u'delete')
+        action = self.request.POST.get('delete')
         if action is not None:
 
             parent = self.context.__parent__
 
-            if action == u'delete':
+            if action == 'delete':
                 location = resource_url(parent, self.request)
-                self.flash(_(u'${title} was deleted.',
+                self.flash(_('${title} was deleted.',
                              mapping=dict(title=self.context.title)),
-                           u'success')
+                           'success')
                 del parent[self.context.name]
             else:
                 location = resource_url(self.context, self.request)
@@ -302,16 +302,16 @@ class NodeActions(object):
         if 'delete_nodes' in self.request.POST:
             ids = self.request.POST.getall('children-to-delete')
             if not ids:
-                self.flash(_(u"Nothing was deleted."), 'info')
+                self.flash(_("Nothing was deleted."), 'info')
             for id in ids:
                 item = DBSession.query(Node).get(id)
-                self.flash(_(u'${title} was deleted.',
+                self.flash(_('${title} was deleted.',
                              mapping=dict(title=item.title)), 'success')
                 del self.context[item.name]
             return self.back('@@contents')
 
         if 'cancel' in self.request.POST:
-            self.flash(_(u'No changes were made.'), 'info')
+            self.flash(_('No changes were made.'), 'info')
             return self.back('@@contents')
 
         ids = self._selected_children(add_context=False)
@@ -338,11 +338,11 @@ class NodeActions(object):
             name = self.request.POST['name']
             title = self.request.POST['title']
             if not name or not title:
-                self.flash(_(u'Name and title are required.'), 'error')
+                self.flash(_('Name and title are required.'), 'error')
             else:
                 self.context.name = name.replace('/', '')
                 self.context.title = title
-                self.flash(_(u'Item was renamed.'), 'success')
+                self.flash(_('Item was renamed.'), 'success')
                 return self.back('')
         return {}
 
@@ -365,19 +365,19 @@ class NodeActions(object):
                 name = self.request.POST[id + '-name']
                 title = self.request.POST[id + '-title']
                 if not name or not title:
-                    self.flash(_(u'Name and title are required.'), 'error')
+                    self.flash(_('Name and title are required.'), 'error')
                     location = resource_url(self.context, self.request,
                                             '@@rename_nodes')
                     return HTTPFound(location=location)
                 else:
                     item.name = title_to_name(name,
-                                              blacklist=self.context.keys())
+                                              blacklist=list(self.context.keys()))
                     item.title = title
-            self.flash(_(u'Your changes have been saved.'), 'success')
+            self.flash(_('Your changes have been saved.'), 'success')
             return self.back('@@contents')
 
         if 'cancel' in self.request.POST:
-            self.flash(_(u'No changes were made.'), 'info')
+            self.flash(_('No changes were made.'), 'info')
             return self.back('@@contents')
 
         ids = self._selected_children(add_context=False)
@@ -400,9 +400,9 @@ class NodeActions(object):
         """
         if 'change_state' in self.request.POST:
             ids = self.request.POST.getall('children-to-change-state')
-            to_state = self.request.POST.get('to-state', u'no-change')
+            to_state = self.request.POST.get('to-state', 'no-change')
             include_children = self.request.POST.get('include-children')
-            if to_state != u'no-change':
+            if to_state != 'no-change':
                 items = DBSession.query(Node).filter(Node.id.in_(ids)).all()
                 for item in items:
                     wf = get_workflow(item)
@@ -417,13 +417,13 @@ class NodeActions(object):
                                 wf.transition_to_state(child,
                                                        self.request,
                                                        to_state, )
-                self.flash(_(u'Your changes have been saved.'), 'success')
+                self.flash(_('Your changes have been saved.'), 'success')
             else:
-                self.flash(_(u'No changes were made.'), 'info')
+                self.flash(_('No changes were made.'), 'info')
             return self.back('@@contents')
 
         if 'cancel' in self.request.POST:
-            self.flash(_(u'No changes were made.'), 'info')
+            self.flash(_('No changes were made.'), 'info')
             return self.back('@@contents')
 
         ids = self._selected_children(add_context=False)
@@ -452,22 +452,22 @@ def contents_buttons(context, request):
     """
     buttons = []
     if get_paste_items(context, request):
-        buttons.append(ActionButton('paste', title=_(u'Paste'),
+        buttons.append(ActionButton('paste', title=_('Paste'),
                                     no_children=True))
     if context.children:
-        buttons.append(ActionButton('copy', title=_(u'Copy')))
-        buttons.append(ActionButton('cut', title=_(u'Cut')))
-        buttons.append(ActionButton('rename_nodes', title=_(u'Rename'),
-                                    css_class=u'btn btn-warning'))
-        buttons.append(ActionButton('delete_nodes', title=_(u'Delete'),
-                                    css_class=u'btn btn-danger'))
+        buttons.append(ActionButton('copy', title=_('Copy')))
+        buttons.append(ActionButton('cut', title=_('Cut')))
+        buttons.append(ActionButton('rename_nodes', title=_('Rename'),
+                                    css_class='btn btn-warning'))
+        buttons.append(ActionButton('delete_nodes', title=_('Delete'),
+                                    css_class='btn btn-danger'))
         if get_workflow(context) is not None:
             buttons.append(ActionButton('change_state',
-                                        title=_(u'Change State')))
-        buttons.append(ActionButton('up', title=_(u'Move up')))
-        buttons.append(ActionButton('down', title=_(u'Move down')))
-        buttons.append(ActionButton('show', title=_(u'Show')))
-        buttons.append(ActionButton('hide', title=_(u'Hide')))
+                                        title=_('Change State')))
+        buttons.append(ActionButton('up', title=_('Move up')))
+        buttons.append(ActionButton('down', title=_('Move down')))
+        buttons.append(ActionButton('show', title=_('Show')))
+        buttons.append(ActionButton('hide', title=_('Hide')))
     return [button for button in buttons if button.permitted(context, request)]
 
 
@@ -504,9 +504,9 @@ def contents(context, request):
     for button in buttons:
         if button.name in request.POST:
             children = request.POST.getall('children')
-            if not children and button.name != u'paste':
+            if not children and button.name != 'paste':
                 request.session.flash(
-                    _(u'You have to select items to perform an action.'),
+                    _('You have to select items to perform an action.'),
                     'info')
                 location = resource_url(context, request) + '@@contents'
                 return HTTPFound(location=location)

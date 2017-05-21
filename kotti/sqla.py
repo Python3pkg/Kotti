@@ -6,7 +6,7 @@ Inheritance Diagram
 
 .. inheritance-diagram:: kotti.sqla
 """
-from __future__ import absolute_import, division, print_function
+
 
 from pyramid.compat import json
 from pyramid.security import ALL_PERMISSIONS
@@ -99,7 +99,7 @@ class MutationDict(Mutable):
     def __json__(self, request=None):
         return dict([(key, value.__json__(request))
                      if hasattr(value, '__json__') else (key, value)
-                     for key, value in self._d.items()])
+                     for key, value in list(self._d.items())])
 
 
 class MutationList(Mutable):
@@ -190,7 +190,7 @@ class NestedMixin(object):
             super(NestedMixin, self).changed()
 
     def try_wrap(self, value):
-        for typ, wrapper in MUTATION_WRAPPERS.items():
+        for typ, wrapper in list(MUTATION_WRAPPERS.items()):
             if isinstance(value, typ):
                 value = wrapper(value, __parent__=self)
                 break

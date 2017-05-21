@@ -2,10 +2,10 @@
 """
 User management screens
 """
-from __future__ import absolute_import, division, print_function
+
 
 import re
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import colander
 from deform import Button
@@ -47,17 +47,17 @@ def roles_form_handler(context, request, available_role_names, groups_lister):
             if name.startswith('orig-role::'):
                 # orig-role::* is hidden checkboxes that allow us to
                 # see what checkboxes were in the form originally
-                token, principal_name, role_name = unicode(name).split(u'::')
+                token, principal_name, role_name = str(name).split('::')
                 if role_name not in available_role_names:
                     raise Forbidden()
                 new_value = bool(request.params.get(
-                    u'role::{0}::{1}'.format(principal_name, role_name)))
+                    'role::{0}::{1}'.format(principal_name, role_name)))
                 if principal_name not in p_to_r:
                     p_to_r[principal_name] = set()
                 if new_value:
                     p_to_r[principal_name].add(role_name)
 
-        for principal_name, new_role_names in p_to_r.items():
+        for principal_name, new_role_names in list(p_to_r.items()):
             # We have to be careful with roles that aren't mutable here:
             orig_role_names = set(
                 groups_lister(principal_name, context))
@@ -70,9 +70,9 @@ def roles_form_handler(context, request, available_role_names, groups_lister):
 
         if changed:
             request.session.flash(
-                _(u'Your changes have been saved.'), 'success')
+                _('Your changes have been saved.'), 'success')
         else:
-            request.session.flash(_(u'No changes were made.'), 'info')
+            request.session.flash(_('No changes were made.'), 'info')
 
     return changed
 
@@ -96,16 +96,16 @@ def search_principals(request, context=None, ignore=None, extra=()):
         postdata = request.json
     if 'search' in postdata:
         if request.is_xhr:
-            query = u'*{0}*'.format(postdata['query'])
+            query = '*{0}*'.format(postdata['query'])
         else:
-            query = u'*{0}*'.format(request.params['query'])
+            query = '*{0}*'.format(request.params['query'])
         found = False
         for p in principals.search(name=query, title=query, email=query):
             found = True
             if p.name not in ignore:
                 entries.append((p, list_groups_ext(p.name, context)))
         if not found:
-            flash(_(u'No users or groups were found.'), 'info')
+            flash(_('No users or groups were found.'), 'info')
 
     return entries
 
@@ -127,7 +127,7 @@ def share_node(context, request):
         all_groups = entry[1][0]
         return [g for g in all_groups if g.startswith('role:')]
 
-    existing = filter(with_roles, existing)
+    existing = list(filter(with_roles, existing))
     seen = set([entry[0].name for entry in existing])
 
     # Allow search to take place and add some entries:
@@ -152,20 +152,20 @@ def name_pattern_validator(node, value):
     """
     valid_pattern = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
     if not valid_pattern.match(value):
-        raise colander.Invalid(node, _(u"Invalid value"))
+        raise colander.Invalid(node, _("Invalid value"))
 
 
 def name_new_validator(node, value):
     if get_principals().get(value.lower()) is not None:
         raise colander.Invalid(
-            node, _(u"A user with that name already exists."))
+            node, _("A user with that name already exists."))
 
 
 @colander.deferred
 def deferred_email_validator(node, kw):
     def raise_invalid_email(node, value):
         raise colander.Invalid(
-            node, _(u"A user with that email already exists."))
+            node, _("A user with that email already exists."))
     request = kw['request']
     if request.POST:
         email = request.params.get('email')
@@ -188,14 +188,14 @@ def roleset_validator(node, value):
 def group_validator(node, value):
     principals = get_principals()
     if principals.get('group:' + value) is None:
-        raise colander.Invalid(node, _(u"No such group: ${group}",
+        raise colander.Invalid(node, _("No such group: ${group}",
                                        mapping=dict(group=value)))
 
 
 class Groups(colander.SequenceSchema):
     group = colander.SchemaNode(
         colander.String(),
-        title=_(u'Group'),
+        title=_('Group'),
         validator=group_validator,
         missing=None,
         widget=AutocompleteInputWidget(),
@@ -203,10 +203,10 @@ class Groups(colander.SequenceSchema):
 
 
 class PrincipalBasic(colander.MappingSchema):
-    title = colander.SchemaNode(colander.String(), title=_(u'Title'))
+    title = colander.SchemaNode(colander.String(), title=_('Title'))
     email = colander.SchemaNode(
         colander.String(),
-        title=_(u'Email'),
+        title=_('Email'),
         validator=deferred_email_validator,
     )
 
@@ -214,30 +214,30 @@ class PrincipalBasic(colander.MappingSchema):
 class PrincipalFull(PrincipalBasic):
     name = colander.SchemaNode(
         colander.String(),
-        title=_(u'Name'),
+        title=_('Name'),
         validator=colander.All(name_pattern_validator, name_new_validator),
         )
     password = colander.SchemaNode(
         colander.String(),
-        title=_(u'Password'),
+        title=_('Password'),
         validator=colander.Length(min=5),
         missing=None,
         widget=CheckedPasswordWidget(),
         )
     active = colander.SchemaNode(
         colander.Boolean(),
-        title=_(u'Active'),
-        description=_(u"Untick this to deactivate the account."),
+        title=_('Active'),
+        description=_("Untick this to deactivate the account."),
         )
     roles = colander.SchemaNode(
         colander.Set(),
         validator=roleset_validator,
         missing=[],
-        title=_(u"Global roles"),
+        title=_("Global roles"),
         widget=CheckboxChoiceWidget(),
         )
     groups = Groups(
-        title=_(u'Groups'),
+        title=_('Groups'),
         missing=[],
         # XXX min_len doesn't really do what we want here.  We'd like
         # the close buttons to appear nevertheless (maybe the now
@@ -256,9 +256,9 @@ def principal_schema(base=PrincipalFull()):
         has_groups = False
     if has_groups:
         all_groups = []
-        for p in principals.search(name=u'group:*'):
-            value = p.name.split(u'group:')[1]
-            label = u"{0}, {1}".format(p.title, value)
+        for p in principals.search(name='group:*'):
+            value = p.name.split('group:')[1]
+            label = "{0}, {1}".format(p.title, value)
             all_groups.append(dict(value=value, label=label))
         schema['groups']['group'].widget.values = all_groups
         schema['roles'].widget.values = [
@@ -275,9 +275,9 @@ def user_schema(base=PrincipalFull()):
         has_password = False
     if has_password:
         schema['password'].description = _(
-            u"Leave this empty and tick the 'Send password registration' "
-            u"box below to have the user set their own password.")
-    schema['title'].title = _(u"Full name")
+            "Leave this empty and tick the 'Send password registration' "
+            "box below to have the user set their own password.")
+    schema['title'].title = _("Full name")
     return schema
 
 
@@ -300,7 +300,7 @@ def _massage_groups_in(appstruct):
     """
     groups = appstruct.get('groups', [])
     all_groups = list(appstruct.get('roles', [])) + [
-        u'group:{0}'.format(g) for g in groups if g]
+        'group:{0}'.format(g) for g in groups if g]
     if 'roles' in appstruct:
         del appstruct['roles']
     appstruct['groups'] = all_groups
@@ -311,19 +311,19 @@ def _massage_groups_out(appstruct):
     split 'groups' into 'roles' and 'groups'.
     """
     d = appstruct
-    groups = [g.split(u'group:')[1] for g in d.get('groups', u'')
-              if g and g.startswith(u'group:')]
-    roles = [r for r in d.get('groups', u'') if r and r.startswith(u'role:')]
+    groups = [g.split('group:')[1] for g in d.get('groups', '')
+              if g and g.startswith('group:')]
+    roles = [r for r in d.get('groups', '') if r and r.startswith('role:')]
     d['groups'] = groups
     d['roles'] = roles
     return d
 
 
 class UserAddFormView(AddFormView):
-    item_type = _(u'User')
+    item_type = _('User')
     form_options = (('formid', 'deform_user_add'), )
-    buttons = (Button('add_user', _(u'Add User')),
-               Button('cancel', _(u'Cancel')))
+    buttons = (Button('add_user', _('Add User')),
+               Button('cancel', _('Cancel')))
 
     @staticmethod
     def schema_factory():
@@ -331,8 +331,8 @@ class UserAddFormView(AddFormView):
         del schema['active']
         schema.add(colander.SchemaNode(
             colander.Boolean(),
-            name=u'send_email',
-            title=_(u'Send password registration link.'),
+            name='send_email',
+            title=_('Send password registration link.'),
             default=True,
             ))
         return schema
@@ -347,7 +347,7 @@ class UserAddFormView(AddFormView):
         if send_email:
             email_set_password(get_principals()[name], self.request)
         self.request.session.flash(
-            _(u'${title} was added.',
+            _('${title} was added.',
               mapping=dict(title=appstruct['title'])), 'success')
         location = self.request.url.split('?')[0] + '?' + urlencode(
             {'extra': name})
@@ -355,10 +355,10 @@ class UserAddFormView(AddFormView):
 
 
 class GroupAddFormView(UserAddFormView):
-    item_type = _(u"Group")
+    item_type = _("Group")
     form_options = (('formid', 'deform_group_add'), )
-    buttons = (Button('add_group', _(u'Add Group')),
-               Button('cancel', _(u'Cancel')))
+    buttons = (Button('add_group', _('Add Group')),
+               Button('cancel', _('Cancel')))
 
     @staticmethod
     def schema_factory():
@@ -367,7 +367,7 @@ class GroupAddFormView(UserAddFormView):
         return schema
 
     def add_group_success(self, appstruct):
-        appstruct['name'] = u'group:{0}'.format(appstruct['name'].lower())
+        appstruct['name'] = 'group:{0}'.format(appstruct['name'].lower())
         return self.add_user_success(appstruct)
 
 
@@ -387,7 +387,7 @@ class UsersManage(FormView):
         api = template_api(self.context, self.request,
                            cp_links=CONTROL_PANEL_LINKS)
 
-        api.page_title = _(u"User Management")
+        api.page_title = _("User Management")
 
         principals = get_principals()
 
@@ -451,9 +451,9 @@ class UserEditFormView(EditFormView):
 
 class UserManageFormView(UserEditFormView):
 
-    buttons = (Button('save', _(u'Save')),
-               Button('cancel', _(u'Cancel')),
-               Button('delete', _(u'Delete'), css_class='btn btn-danger'))
+    buttons = (Button('save', _('Save')),
+               Button('cancel', _('Cancel')),
+               Button('delete', _('Delete'), css_class='btn btn-danger'))
 
     @staticmethod
     def schema_factory():
@@ -463,7 +463,7 @@ class UserManageFormView(UserEditFormView):
 
     def before(self, form):
         context = self.context.__dict__.copy()
-        context['password'] = u''
+        context['password'] = ''
         form.appstruct = _massage_groups_out(context)
 
     def save_success(self, appstruct):
@@ -476,13 +476,13 @@ class UserManageFormView(UserEditFormView):
         return super(UserManageFormView, self).save_success(appstruct)
 
     def cancel_success(self, appstruct):
-        self.request.session.flash(_(u'No changes were made.'), 'info')
-        location = u'{0}/@@setup-users'.format(self.request.application_url)
+        self.request.session.flash(_('No changes were made.'), 'info')
+        location = '{0}/@@setup-users'.format(self.request.application_url)
         return HTTPFound(location=location)
     cancel_failure = cancel_success
 
     def delete_success(self, appstruct):
-        location = u'{0}/@@delete-user?name={1}'.format(
+        location = '{0}/@@delete-user?name={1}'.format(
             self.request.application_url, self.request.params['name'])
         return HTTPFound(location=location)
 
@@ -514,11 +514,11 @@ class UserManage(FormView):
         principal = get_principals()[user_or_group]
 
         is_group = user_or_group.startswith("group:")
-        principal_type = _(u"Group") if is_group else _(u"User")
+        principal_type = _("Group") if is_group else _("User")
 
         api = template_api(
             self.context, self.request,
-            page_title=_(u"Edit ${principal_type} ${title}",
+            page_title=_("Edit ${principal_type} ${title}",
                          mapping=dict(principal_type=principal_type,
                                       title=self.context.title)),
             cp_links=CONTROL_PANEL_LINKS,
@@ -546,32 +546,32 @@ def user_delete(context, request):
         user_or_group = request.params['name']
         principal = principals.search(name=user_or_group).first()
         if principal is None:
-            request.session.flash(_(u'User was not found.'), 'error')
+            request.session.flash(_('User was not found.'), 'error')
         else:
             is_group = user_or_group.startswith("group:")
-            principal_type = _(u"Group") if is_group else _(u"User")
+            principal_type = _("Group") if is_group else _("User")
 
             # We already coming from the confirmation page.
             if 'delete' in request.POST:
                 principals.__delitem__(principal.name)
                 notify(UserDeleted(principal, request))
                 request.session.flash(
-                    _(u'${principal_type} ${title} was deleted.',
+                    _('${principal_type} ${title} was deleted.',
                       mapping=dict(principal_type=principal_type,
                                    title=principal.title)), 'info')
-                location = u'{0}/@@setup-users'.format(request.application_url)
+                location = '{0}/@@setup-users'.format(request.application_url)
                 return HTTPFound(location=location)
 
             api = template_api(
                 context, request,
-                page_title=_(u"Delete ${principal_type} ${title}",
+                page_title=_("Delete ${principal_type} ${title}",
                              mapping=dict(principal_type=principal_type,
                                           title=principal.title)),
                 principal_type=principal_type,
                 principal=principal)
             return {'api': api, }
     else:
-        request.session.flash(_(u'No name was given.'), 'error')
+        request.session.flash(_('No name was given.'), 'error')
 
     return {'api': template_api(context, request), }
 
@@ -600,7 +600,7 @@ class Preferences(FormView):
             raise Forbidden()
 
         api = template_api(self.context, self.request)
-        api.page_title = _(u"My preferences - ${title}",
+        api.page_title = _("My preferences - ${title}",
                            mapping=dict(title=api.site_title))
 
         form = self.PreferencesFormView(user, self.request)()

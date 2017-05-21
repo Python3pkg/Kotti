@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import pytest
 from mock import patch
@@ -610,7 +610,7 @@ class TestBrowser:
 
     def test_user_management(self, webtest, settings, dummy_mailer):
         from kotti import get_settings
-        get_settings()['kotti.site_title'] = u'Website des Kottbusser Tors'
+        get_settings()['kotti.site_title'] = 'Website des Kottbusser Tors'
 
         app = webtest.app
         resp = self._login(app, 'admin', 'secret').maybe_follow()
@@ -733,7 +733,7 @@ class TestBrowser:
         # Remember that we sent Bob an email for registration.
         # He can use it to set his own password:
         [email, email2] = dummy_mailer.outbox
-        assert email.recipients == [u'"Bob Dabolina" <bob@dabolina.com>']
+        assert email.recipients == ['"Bob Dabolina" <bob@dabolina.com>']
         assert email.subject == "Your registration for Website des " \
                                 "Kottbusser Tors"
         assert "Hello, Bob Dabolina!" in email.body

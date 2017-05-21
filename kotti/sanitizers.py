@@ -4,7 +4,7 @@
 For a high level introduction and available configuration options
 see :ref:`sanitizers`.
 """
-from __future__ import absolute_import, division, print_function
+
 
 from bleach import clean
 from bleach_whitelist import all_styles
@@ -76,9 +76,9 @@ def minimal_html(html):
     :rtype: unicode
     """
 
-    attributes = dict(zip(
-        markdown_attrs.keys() + print_attrs.keys(),
-        markdown_attrs.values() + print_attrs.values()))
+    attributes = dict(list(zip(
+        list(markdown_attrs.keys()) + list(print_attrs.keys()),
+        list(markdown_attrs.values()) + list(print_attrs.values()))))
 
     sanitized = clean(
         html,

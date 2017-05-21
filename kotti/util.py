@@ -7,7 +7,7 @@ Inheritance Diagram
 .. inheritance-diagram:: kotti.util
 """
 
-from __future__ import absolute_import, division, print_function
+
 
 import cgi
 import re
@@ -188,12 +188,12 @@ class Link(LinkBase):
         return isinstance(other, Link) and repr(self) == repr(other)
 
     def __repr__(self):
-        return u'Link({0}, {1})'.format(self.name, self.title)
+        return 'Link({0}, {1})'.format(self.name, self.title)
 
 
 class ActionButton(Link):
     def __init__(self, path, title=None, no_children=False,
-                 css_class=u"btn btn-default"):
+                 css_class="btn btn-default"):
         super(ActionButton, self).__init__(path, title)
         self.no_children = no_children
         self.css_class = css_class
@@ -228,7 +228,7 @@ def cache(compute_key, container_factory):
                 key = compute_key(*args, **kwargs)
             except DontCache:
                 return func(*args, **kwargs)
-            key = u'{0}.{1}:{2}'.format(func.__module__, func.__name__, key)
+            key = '{0}.{1}:{2}'.format(func.__module__, func.__name__, key)
             cached_value = cache.get(key, marker)
             if cached_value is marker:
                 cached_value = cache[key] = func(*args, **kwargs)
@@ -271,24 +271,24 @@ def extract_from_settings(prefix, settings=None):
     from kotti import get_settings
     settings = settings if settings is not None else get_settings()
     extracted = {}
-    for key, value in settings.items():
+    for key, value in list(settings.items()):
         if key.startswith(prefix):
             extracted[key[len(prefix):]] = value
     return extracted
 
 
 def disambiguate_name(name):
-    parts = name.split(u'-')
+    parts = name.split('-')
     if len(parts) > 1:
         try:
             index = int(parts[-1])
         except ValueError:
-            parts.append(u'1')
+            parts.append('1')
         else:
-            parts[-1] = unicode(index + 1)
+            parts[-1] = str(index + 1)
     else:
-        parts.append(u'1')
-    return u'-'.join(parts)
+        parts.append('1')
+    return '-'.join(parts)
 
 
 def title_to_name(title, blacklist=(), max_length=None):
@@ -306,10 +306,10 @@ def title_to_name(title, blacklist=(), max_length=None):
         locale_name = 'en'
     from kotti import get_settings
     urlnormalizer = get_settings()['kotti.url_normalizer'][0]
-    name = unicode(urlnormalizer(title, locale_name, max_length=max_length))
+    name = str(urlnormalizer(title, locale_name, max_length=max_length))
     if name not in blacklist:
         return name
-    name += u'-1'
+    name += '-1'
     while name in blacklist:
         name = disambiguate_name(name)
     return name

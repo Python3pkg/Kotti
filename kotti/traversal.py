@@ -33,7 +33,7 @@ request.path          Pyramid traverser (rps) Kotti traverser (rps)
 
 """
 
-from __future__ import absolute_import, division, print_function
+
 
 from pyramid.compat import decode_path_info
 from pyramid.compat import is_nonstr_iter

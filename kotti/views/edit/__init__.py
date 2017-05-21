@@ -2,7 +2,7 @@
 """
 Edit views.
 """
-from __future__ import absolute_import, division, print_function
+
 
 import warnings
 
@@ -22,8 +22,8 @@ def _translate_titles(info):
         d = d.copy()
         try:
             d['title'] = eval(d['title']) if 'title' in d else d['name']
-            warnings.warn(u'_() in workflow.zcml is deprecated. '
-                          u'Support will be removed in Kotti 2.0.0.',
+            warnings.warn('_() in workflow.zcml is deprecated. '
+                          'Support will be removed in Kotti 2.0.0.',
                           DeprecationWarning)
         except (NameError, SyntaxError):
             d['title'] = _(d['title']) if 'title' in d else d['name']

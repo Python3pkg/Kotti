@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import warnings
 
@@ -77,8 +77,8 @@ class TestToBeRemovedIn20:
 
         with warnings.catch_warnings(record=True) as w:
             info = [
-                {'data': {'title': u"_(u'Private')"}, 'title': u"_(u'Private')", },
-                {'data': {'title': u"_(u'Public')"}, 'title': u"_(u'Public')", },
+                {'data': {'title': "_(u'Private')"}, 'title': "_(u'Private')", },
+                {'data': {'title': "_(u'Public')"}, 'title': "_(u'Public')", },
             ]
             _translate_titles(info)
             assert_deprecations(w, "removed in Kotti 2.0.0")

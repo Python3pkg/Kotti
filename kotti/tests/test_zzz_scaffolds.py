@@ -9,7 +9,7 @@ are marked with ``slow`` and are not run unless ``py.test`` is invoked with the
 The module name starts with ``test_zzz`` to make the contained tests always the
 last in a complete test run.
 """
-from __future__ import absolute_import, division, print_function
+
 
 import os
 

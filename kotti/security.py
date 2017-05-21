@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-from __future__ import with_statement
+
+
 
 from UserDict import DictMixin
 from contextlib import contextmanager
@@ -64,10 +64,10 @@ def has_permission(permission, context, request):
     return request.has_permission(permission, context)
 
 
-deprecated(u'has_permission',
-           u"kotti.security.has_permission is deprecated as of Kotti 1.0 and "
-           u"will be no longer available starting with Kotti 2.0.  "
-           u"Please use the has_permission method of request instead.")
+deprecated('has_permission',
+           "kotti.security.has_permission is deprecated as of Kotti 1.0 and "
+           "will be no longer available starting with Kotti 2.0.  "
+           "Please use the has_permission method of request instead.")
 
 
 class Principal(Base):
@@ -107,7 +107,7 @@ class Principal(Base):
         )
 
     def __init__(self, name, password=None, active=True, confirm_token=None,
-                 title=u"", email=None, groups=None):
+                 title="", email=None, groups=None):
         self.name = name
         if password is not None:
             password = get_principals().hash_password(password)
@@ -123,7 +123,7 @@ class Principal(Base):
         self.last_login_date = None
 
     def __repr__(self):  # pragma: no cover
-        return u'<Principal {0!r}>'.format(self.name)
+        return '<Principal {0!r}>'.format(self.name)
 
 
 class AbstractPrincipals(object):
@@ -194,15 +194,15 @@ class AbstractPrincipals(object):
         """
 
 ROLES = {
-    u'role:viewer': Principal(u'role:viewer', title=_(u'Viewer')),
-    u'role:editor': Principal(u'role:editor', title=_(u'Editor')),
-    u'role:owner': Principal(u'role:owner', title=_(u'Owner')),
-    u'role:admin': Principal(u'role:admin', title=_(u'Admin')),
+    'role:viewer': Principal('role:viewer', title=_('Viewer')),
+    'role:editor': Principal('role:editor', title=_('Editor')),
+    'role:owner': Principal('role:owner', title=_('Owner')),
+    'role:admin': Principal('role:admin', title=_('Admin')),
     }
 _DEFAULT_ROLES = ROLES.copy()
 
 # These roles are visible in the sharing tab
-SHARING_ROLES = [u'role:viewer', u'role:editor', u'role:owner']
+SHARING_ROLES = ['role:viewer', 'role:editor', 'role:owner']
 USER_MANAGEMENT_ROLES = SHARING_ROLES + ['role:admin']
 _DEFAULT_SHARING_ROLES = SHARING_ROLES[:]
 _DEFAULT_USER_MANAGEMENT_ROLES = USER_MANAGEMENT_ROLES[:]
@@ -302,12 +302,12 @@ def _cachekey_list_groups_ext(name, context=None, _seen=None, _inherited=None):
         raise DontCache
     else:
         context_id = getattr(context, 'id', id(context))
-        return unicode(name), context_id
+        return str(name), context_id
 
 
 @request_cache(_cachekey_list_groups_ext)
 def list_groups_ext(name, context=None, _seen=None, _inherited=None):
-    name = unicode(name)
+    name = str(name)
     groups = set()
     recursing = _inherited is not None
     _inherited = _inherited or set()
@@ -350,14 +350,14 @@ def set_groups(name, context, groups_to_set=()):
 
     from kotti.resources import LocalGroup
 
-    name = unicode(name)
+    name = str(name)
     context.local_groups = [
         # keep groups for "other" principals
         lg for lg in context.local_groups
         if lg.principal_name != name
     ] + [
         # reset groups for given principal
-        LocalGroup(context, name, unicode(group_name))
+        LocalGroup(context, name, str(group_name))
         for group_name in groups_to_set
     ]
 
@@ -461,9 +461,9 @@ class Principals(DictMixin):
             cls.factory.name == bindparam('name')))
         return query(DBSession()).params(name=name).one()
 
-    @request_cache(lambda self, name: unicode(name))
+    @request_cache(lambda self, name: str(name))
     def __getitem__(self, name):
-        name = unicode(name)
+        name = str(name)
         # avoid calls to the DB for roles
         # (they're not stored in the ``principals`` table)
         if name.startswith('role:'):
@@ -476,13 +476,13 @@ class Principals(DictMixin):
             raise KeyError(name)
 
     def __setitem__(self, name, principal):
-        name = unicode(name)
+        name = str(name)
         if isinstance(principal, dict):
             principal = self.factory(**principal)
         DBSession.add(principal)
 
     def __delitem__(self, name):
-        name = unicode(name)
+        name = str(name)
         try:
             principal = self._principal_by_name(name)
             DBSession.delete(principal)
@@ -494,7 +494,7 @@ class Principals(DictMixin):
             yield principal_name
 
     def keys(self):
-        return list(self.iterkeys())
+        return list(self.keys())
 
     def search(self, match='any', **kwargs):
         """ Search the principal database.
@@ -516,7 +516,7 @@ class Principals(DictMixin):
 
         filters = []
 
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             col = getattr(self.factory, key)
             if isinstance(value, string_types) and '*' in value:
                 value = value.replace('*', '%').lower()
@@ -540,7 +540,7 @@ class Principals(DictMixin):
     def hash_password(self, password, hashed=None):
         if hashed is None:
             hashed = bcrypt.gensalt(self.log_rounds)
-        return unicode(
+        return str(
             bcrypt.hashpw(password.encode('utf-8'), hashed.encode('utf-8')))
 
     def validate_password(self, clear, hashed):

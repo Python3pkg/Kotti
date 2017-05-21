@@ -2,7 +2,7 @@
 """
 Created on 2013-02-23
 """
-from __future__ import absolute_import, division, print_function
+
 
 import json
 from cgi import FieldStorage
@@ -148,7 +148,7 @@ class UploadView(object):
                 'error': e.message,
             }
         else:
-            name = title_to_name(fs.filename, blacklist=self.context.keys())
+            name = title_to_name(fs.filename, blacklist=list(self.context.keys()))
             self.context[name] = node = factory.from_field_storage(fs)
             node.title = fs.filename
 

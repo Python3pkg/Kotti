@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+
 
 import datetime
 import time
@@ -28,8 +28,8 @@ def delta(date_string):
 @pytest.fixture
 def cachetest_content(root, filedepot):
     image = asset('sendeschluss.jpg')
-    root['textfile'] = File("file contents", u"mytext.txt", u"text/plain")
-    root['image'] = Image(image.read(), u"sendeschluss.jpg", u"image/jpeg")
+    root['textfile'] = File("file contents", "mytext.txt", "text/plain")
+    root['image'] = Image(image.read(), "sendeschluss.jpg", "image/jpeg")
 
 
 class TestSetMaxAge:
